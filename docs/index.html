@@ -18,6 +18,37 @@
 </div>
 <script type="text/javascript" src="app-1.0.1.js"></script>
     <!-- BACKGROUND MUSIC -->
-<audio src="./tetris.mp3" autoplay loop></audio>
+<audio id="bg-music" src="./tetris.mp3" autoplay loop></audio>
+    <script>
+
+function autoPlayMusic() {
+        // 自动播放音乐效果，解决浏览器或者APP自动播放问题
+        function musicInBrowserHandler() {
+            musicPlay(true);
+            document.body.removeEventListener('touchstart', musicInBrowserHandler);
+        }
+        document.body.addEventListener('touchstart', musicInBrowserHandler);
+
+        // 自动播放音乐效果，解决微信自动播放问题
+        function musicInWeixinHandler() {
+            musicPlay(true);
+            document.addEventListener("WeixinJSBridgeReady", function () {
+                musicPlay(true);
+            }, false);
+            document.removeEventListener('DOMContentLoaded', musicInWeixinHandler);
+        }
+        document.addEventListener('DOMContentLoaded', musicInWeixinHandler);
+    }
+  function musicPlay(isPlay) {
+        var audio = document.getElementById('bg-music');
+        if (isPlay && audio.paused) {
+            audio.play();
+        }
+        if (!isPlay && !audio.paused) {
+            audio.pause();
+        }
+    };
+  autoPlayMusic();
+    </script>
 </body>
 </html>
