@@ -7,10 +7,23 @@
     <meta name="format-detection" content="telephone=no"/>
     <script>;(function(){var w=parseInt(window.screen.width),s=w/640,u=navigator.userAgent.toLowerCase(),m='<meta name="viewport" content="width=640,';if(/android (\d+\.\d+)/.test(u)){if(parseFloat(RegExp.$1)>2.3)m+='minimum-scale='+s+',maximum-scale='+s+',';}else{m+='user-scalable=no,';}m+='target-densitydpi=device-dpi">';document.write(m);}());</script>
     <meta charset="UTF-8">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="white" name="apple-mobile-web-app-status-bar-style">
+
     <title>俄罗斯方块</title>
     <link href="./loader.css" rel="stylesheet" />
 <link href="css-1.0.1.css" rel="stylesheet">
-       <link rel="apple-touch-icon-precomposed" sizes="120x120" href="icon.png"/>
+
+    <!--适用于 Retina 屏的 iPad-->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="./tetris.png"/>
+    <!--适用于 Retina 屏的 iPhone-->
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="./tetris.png"/>
+    <!--适用于非 Retina 屏的 iPad-->
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./tetris.png"/>
+    <!--适用于非 Retina 屏的 iPhone-->
+    <link rel="apple-touch-icon-precomposed" href="./tetris.png"/>
+
 </head>
 <body>
 <div id="root">
