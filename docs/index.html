@@ -12,6 +12,9 @@
         />
         <meta name="format-detection" content="telephone=no" />
         <script>
+            function reload(){
+                navigation.reload();
+            }
             // Register the ServiceWorker
             navigator.serviceWorker
                 .register("sw.js", {
