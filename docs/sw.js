@@ -12,6 +12,8 @@ var REQUIRED_FILES = [
   'music.mp3',
   'tetris.mp3',
   'tetris.png',
+  'favicon.ico',
+  'sw.js',
 ];
 
 self.addEventListener('install', function(event) {
