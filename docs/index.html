@@ -1,69 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta name="renderer" content="webkit">
-    <meta name="description" content="使用React、Redux、Immutable制作的俄罗斯方块" />
-    <meta name="keywords" content="俄罗斯方块,Tetris,React,Redux,Immuatble,JavaScript">
-    <meta name="format-detection" content="telephone=no"/>
-    <script>;(function(){var w=parseInt(window.screen.width),s=w/640,u=navigator.userAgent.toLowerCase(),m='<meta name="viewport" content="width=640,';if(/android (\d+\.\d+)/.test(u)){if(parseFloat(RegExp.$1)>2.3)m+='minimum-scale='+s+',maximum-scale='+s+',';}else{m+='user-scalable=no,';}m+='target-densitydpi=device-dpi">';document.write(m);}());</script>
-    <meta charset="UTF-8">
-    <meta content="yes" name="apple-touch-fullscreen">
-    <meta content="yes" name="apple-mobile-web-app-capable">
-    <meta content="white" name="apple-mobile-web-app-status-bar-style">
+    <head>
+        <meta name="renderer" content="webkit" />
+        <meta
+            name="description"
+            content="使用React、Redux、Immutable制作的俄罗斯方块"
+        />
+        <meta
+            name="keywords"
+            content="俄罗斯方块,Tetris,React,Redux,Immuatble,JavaScript"
+        />
+        <meta name="format-detection" content="telephone=no" />
+        <script>
+            // Register the ServiceWorker
+            navigator.serviceWorker
+                .register("sw.js", {
+                    scope: ".",
+                })
+                .then(function (registration) {
+                    console.log(
+                        "The service worker has been registered ",
+                        registration,
+                    );
+                });
+            navigator.serviceWorker.ready.then(reload);
+            /*
+            // Listen for claiming of our ServiceWorker
+            navigator.serviceWorker.addEventListener(
+                "controllerchange",
+                function (event) {
+                    console.log(
+                        '[controllerchange] A "controllerchange" event has happened ' +
+                            "within navigator.serviceWorker: ",
+                        event,
+                    );
 
-    <title>俄罗斯方块</title>
-    <link href="./loader.css" rel="stylesheet" />
-<link href="css-1.0.1.css" rel="stylesheet">
+                    // Listen for changes in the state of our ServiceWorker
+                    navigator.serviceWorker.controller.addEventListener(
+                        "statechange",
+                        function () {
+                            console.log(
+                                "[controllerchange][statechange] " +
+                                    'A "statechange" has occured: ',
+                                this.state,
+                            );
 
-    <!--适用于 Retina 屏的 iPad-->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="./tetris.png"/>
-    <!--适用于 Retina 屏的 iPhone-->
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="./tetris.png"/>
-    <!--适用于非 Retina 屏的 iPad-->
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="./tetris.png"/>
-    <!--适用于非 Retina 屏的 iPhone-->
-    <link rel="apple-touch-icon-precomposed" href="./tetris.png"/>
+                            // If the ServiceWorker becomes "activated", let the user know they can go offline!
+                            if (this.state === "activated") {
+                                // Show the "You may now use offline" notification
+                                document
+                                    .getElementById("offlineNotification")
+                                    .classList.remove("hidden");
+                            }
+                        },
+                    );
+                },
+            ); 
+            */
+        </script>
+        <script>
+            (function () {
+                var w = parseInt(window.screen.width),
+                    s = w / 640,
+                    u = navigator.userAgent.toLowerCase(),
+                    m = '<meta name="viewport" content="width=640,';
+                if (/android (\d+\.\d+)/.test(u)) {
+                    if (parseFloat(RegExp.$1) > 2.3)
+                        m += "minimum-scale=" + s + ",maximum-scale=" + s + ",";
+                } else {
+                    m += "user-scalable=no,";
+                }
+                m += 'target-densitydpi=device-dpi">';
+                document.write(m);
+            })();
+        </script>
+        <meta charset="UTF-8" />
+        <meta content="yes" name="apple-touch-fullscreen" />
+        <meta content="yes" name="apple-mobile-web-app-capable" />
+        <meta content="white" name="apple-mobile-web-app-status-bar-style" />
 
-</head>
-<body>
-<div id="root">
-    <div class="load">
-        <div class="loader">加载中...</div>
-    </div>
-</div>
-<script type="text/javascript" src="app-1.0.1.js"></script>
-    <!-- BACKGROUND MUSIC -->
-<audio id="bg-music" src="./tetris.mp3" autoplay loop></audio>
-    <script>
+        <title>俄罗斯方块</title>
+        <link href="./loader.css" rel="stylesheet" />
+        <link href="./css-1.0.1.css" rel="stylesheet" />
 
-function autoPlayMusic() {
-        // 自动播放音乐效果，解决浏览器或者APP自动播放问题
-        function musicInBrowserHandler() {
-            musicPlay(true);
-            document.body.removeEventListener('touchstart', musicInBrowserHandler);
-        }
-        document.body.addEventListener('touchstart', musicInBrowserHandler);
+        <!--适用于 Retina 屏的 iPad-->
+        <link
+            rel="apple-touch-icon-precomposed"
+            sizes="144x144"
+            href="./tetris.png"
+        />
+        <!--适用于 Retina 屏的 iPhone-->
+        <link
+            rel="apple-touch-icon-precomposed"
+            sizes="120x120"
+            href="./tetris.png"
+        />
+        <!--适用于非 Retina 屏的 iPad-->
+        <link
+            rel="apple-touch-icon-precomposed"
+            sizes="72x72"
+            href="./tetris.png"
+        />
+        <!--适用于非 Retina 屏的 iPhone-->
+        <link rel="apple-touch-icon-precomposed" href="./tetris.png" />
+    </head>
+    <body>
+        <div id="root">
+            <div class="load">
+                <div class="loader">加载中...</div>
+            </div>
+        </div>
+        <script type="text/javascript" src="./app-1.0.1.js"></script>
+        <!-- BACKGROUND MUSIC -->
+        <audio id="bg-music" src="./tetris.mp3" autoplay loop></audio>
+        <script>
+            function autoPlayMusic() {
+                /* 自动播放音乐效果，解决浏览器或者APP自动播放问题 */
+                function musicInBrowserHandler() {
+                    musicPlay(true);
+                    document.body.removeEventListener(
+                        "touchstart",
+                        musicInBrowserHandler,
+                    );
+                }
+                document.body.addEventListener(
+                    "touchstart",
+                    musicInBrowserHandler,
+                );
 
-        // 自动播放音乐效果，解决微信自动播放问题
-        function musicInWeixinHandler() {
-            musicPlay(true);
-            document.addEventListener("WeixinJSBridgeReady", function () {
-                musicPlay(true);
-            }, false);
-            document.removeEventListener('DOMContentLoaded', musicInWeixinHandler);
-        }
-        document.addEventListener('DOMContentLoaded', musicInWeixinHandler);
-    }
-  function musicPlay(isPlay) {
-        var audio = document.getElementById('bg-music');
-        if (isPlay && audio.paused) {
-            audio.play();
-        }
-        if (!isPlay && !audio.paused) {
-            audio.pause();
-        }
-    };
-  autoPlayMusic();
-    </script>
-</body>
+                /* 自动播放音乐效果，解决微信自动播放问题 */
+                function musicInWeixinHandler() {
+                    musicPlay(true);
+                    document.addEventListener(
+                        "WeixinJSBridgeReady",
+                        function () {
+                            musicPlay(true);
+                        },
+                        false,
+                    );
+                    document.removeEventListener(
+                        "DOMContentLoaded",
+                        musicInWeixinHandler,
+                    );
+                }
+                document.addEventListener(
+                    "DOMContentLoaded",
+                    musicInWeixinHandler,
+                );
+            }
+            function musicPlay(isPlay) {
+                var audio = document.getElementById("bg-music");
+                if (isPlay && audio.paused) {
+                    audio.play();
+                }
+                if (!isPlay && !audio.paused) {
+                    audio.pause();
+                }
+            }
+            autoPlayMusic();
+        </script>
+    </body>
 </html>
