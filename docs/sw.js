@@ -1,117 +1,85 @@
-// [Working example](/serviceworker-cookbook/offline-status/).
+const CACHE_VERSION = "bGR1MjJncDE";
+const addResourcesToCache = async (resources) => {
+    const cache = await caches.open(CACHE_VERSION);
+    await cache.addAll(resources);
+};
 
-var CACHE_NAME = "dependencies-cache";
+const putInCache = async (request, response) => {
+    const cache = await caches.open(CACHE_VERSION);
+    await cache.put(request, response);
+};
 
-// Files required to make this app work offline
-var REQUIRED_FILES = [
-    "app-1.0.1.js",
-    "bg.png",
-    "css-1.0.1.css",
-    "index.html",
-    "loader.css",
-    "music.mp3",
-    "tetris.mp3",
-    "tetris.png",
-    "favicon.ico",
-    "sw.js",
-];
+const cacheFirst = async ({ request, preloadResponsePromise, fallbackUrl }) => {
+    // First try to get the resource from the cache
+    const responseFromCache = await caches.match(request);
+    if (responseFromCache) {
+        return responseFromCache;
+    }
 
-// self.addEventListener("install", function (event) {
-//     // Perform install step:  loading each required file into cache
-//     event.waitUntil(
-//         caches
-//             .open(CACHE_NAME)
-//             .then(function (cache) {
-//                 // Add all offline dependencies to the cache
-//                 console.log(
-//                     "[install] Caches opened, adding all core components" +
-//                         "to cache",
-//                 );
-//                 return cache.addAll(REQUIRED_FILES);
-//             })
-//             .then(function () {
-//                 console.log(
-//                     "[install] All required resources have been cached, " +
-//                         "we're good!",
-//                 );
-//                 return self.skipWaiting();
-//             }),
-//     );
-// });
-self.addEventListener("install", function (event) {
-    // Put `offline.html` page into cache
-    // var offlineRequest = new Request('index.html');
+    // Next try to use the preloaded response, if it's there
+    const preloadResponse = await preloadResponsePromise;
+    if (preloadResponse) {
+        console.info("using preload response", preloadResponse);
+        putInCache(request, preloadResponse.clone());
+        return preloadResponse;
+    }
+
+    // Next try to get the resource from the network
+    try {
+        const responseFromNetwork = await fetch(request);
+        // response may be used only once
+        // we need to save clone to put one copy in cache
+        // and serve second one
+        putInCache(request, responseFromNetwork.clone());
+        return responseFromNetwork;
+    } catch (error) {
+        console.log(
+            "Fetch failed; returning offline page instead.",
+            error.message,
+        );
+        console.log(new URL(request).pathname);
+        const cache = await caches.open(CACHE_VERSION);
+        const cachedResponse = await cache.match(new URL(request.url).pathname);
+        return cachedResponse;
+
+    }
+};
+
+const enableNavigationPreload = async () => {
+    if (self.registration.navigationPreload) {
+        // Enable navigation preloads!
+        await self.registration.navigationPreload.enable();
+    }
+};
+
+self.addEventListener("activate", (event) => {
+    event.waitUntil(enableNavigationPreload());
+    self.clients.claim();
+});
+
+self.addEventListener("install", (event) => {
     event.waitUntil(
-        fetch(event.request)
-            .then(function (response) {
-                return caches.open(CACHE_NAME).then(function (cache) {
-                    console.log(
-                        "[oninstall] Cached offline page",
-                        response.url,
-                    );
-                    // return cache.put(CACHE_NAME, response);
-                    return cache.addAll(REQUIRED_FILES);
-                });
-            })
-            .then(function () {
-                console.log(
-                    "[install] All required resources have been cached, " +
-                        "we're good!",
-                );
-                return self.skipWaiting();
-            }),
+        addResourcesToCache([
+            "app-1.0.1.js",
+            "bg.png",
+            "css-1.0.1.css",
+            "index.html",
+            "loader.css",
+            "music.mp3",
+            "tetris.mp3",
+            "tetris.png",
+            "favicon.ico",
+            "sw.js",
+        ]),
     );
 });
-// self.addEventListener('fetch', function(event) {
-//   event.respondWith(
-//     caches.match(event.request)
-//       .then(function(response) {
-//         // Cache hit - return the response from the cached version
-//         if (response) {
-//           console.log(
-//             '[fetch] Returning from ServiceWorker cache: ',
-//             event.request.url
-//           );
-//           return response;
-//         }
 
-//         // Not in cache - return the result from the live server
-//         // `fetch` is essentially a "fallback"
-//         console.log('[fetch] Returning from server: ', event.request.url);
-//         return fetch(event.request);
-//       }
-//     )
-//   );
-// });
-self.addEventListener("fetch", function (event) {
-    // Only fall back for HTML documents.
-    var request = event.request;
-    // && request.headers.get('accept').includes('text/html')
-    if (request.method === "GET") {
-        // `fetch()` will use the cache when possible, to this examples
-        // depends on cache-busting URL parameter to avoid the cache.
-        event.respondWith(
-            fetch(request).catch(function (error) {
-                // `fetch()` throws an exception when the server is unreachable but not
-                // for valid HTTP responses, even `4xx` or `5xx` range.
-                console.error(
-                    "[onfetch] Failed. Serving cached offline fallback " +
-                        error,
-                );
-                return caches.open(CACHE_NAME).then(function (cache) {
-                    return cache.match(event.request);
-                });
-            }),
-        );
-    }
-    // Any other handlers come here. Without calls to `event.respondWith()` the
-    // request will be handled without the ServiceWorker.
-});
-
-self.addEventListener("activate", function (event) {
-    console.log("[activate] Activating ServiceWorker!");
-
-    // Calling claim() to force a "controllerchange" event on navigator.serviceWorker
-    console.log("[activate] Claiming this ServiceWorker!");
-    event.waitUntil(self.clients.claim());
+self.addEventListener("fetch", (event) => {
+    event.respondWith(
+        cacheFirst({
+            request: event.request,
+            preloadResponsePromise: event.preloadResponse,
+            fallbackUrl: "index.html",
+        }),
+    );
 });
